@@ -1,0 +1,12 @@
+name: n8n-on-aca-jobs
+metadata:
+  template: n8n-on-aca-jobs@0.1.0-beta
+
+hooks:
+  postprovision:
+    posix:
+      shell: sh
+      run: ./infra/scripts/export-job-settings.sh
+    windows:
+      shell: pwsh
+      run: ./infra/scripts/export-job-settings.ps1

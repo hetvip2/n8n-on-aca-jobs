@@ -1,0 +1,4 @@
+dist
+node_modules
+.validation
+package-lock.json

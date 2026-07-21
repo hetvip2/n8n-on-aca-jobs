@@ -1,0 +1,62 @@
+{
+  "id": "aca-jobs-local-smoke",
+  "name": "ACA Jobs Local Runtime Smoke",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Run workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "seconds"
+      },
+      "id": "cli-registration-delay",
+      "name": "Allow CLI registration",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "operation": "startAndWait",
+        "subscriptionId": "local-subscription",
+        "resourceGroup": "local-resource-group",
+        "jobName": "local-job",
+        "correlationId": "={{$execution.id}}",
+        "containerName": "worker",
+        "overrides": { "args": "[\"--smoke\"]" },
+        "pollIntervalSeconds": 1,
+        "timeoutSeconds": 10
+      },
+      "id": "aca-job",
+      "name": "Run mocked ACA Job",
+      "type": "CUSTOM.azureContainerAppsJobs",
+      "typeVersion": 1,
+      "position": [620, 300],
+      "credentials": {
+        "azureContainerAppsJobsApi": {
+          "id": "local-overwrite",
+          "name": "Azure Container Apps Jobs"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run workflow": {
+      "main": [
+        [{ "node": "Allow CLI registration", "type": "main", "index": 0 }]
+      ]
+    },
+    "Allow CLI registration": {
+      "main": [[{ "node": "Run mocked ACA Job", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "b505ad48-3c68-478e-b15d-608c758122bf"
+}

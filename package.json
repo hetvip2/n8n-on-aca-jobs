@@ -1,0 +1,61 @@
+{
+  "name": "n8n-nodes-aca-jobs",
+  "version": "0.1.0",
+  "description": "Run Azure Container Apps Jobs from an existing n8n installation.",
+  "license": "Apache-2.0",
+  "keywords": [
+    "n8n-community-node-package",
+    "azure-container-apps-jobs",
+    "azure"
+  ],
+  "files": [
+    "dist",
+    "workflows",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": "./dist/src/aca-jobs-client.js",
+    "./aca-jobs-client": "./dist/src/aca-jobs-client.js"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/AzureContainerAppsJobsApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/AzureContainerAppsJobs/AzureContainerAppsJobs.node.js"
+    ]
+  },
+  "engines": {
+    "node": ">=22.22"
+  },
+  "scripts": {
+    "build": "node node_modules/typescript/bin/tsc -p tsconfig.json",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run package:check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "package:check": "node scripts/check-package.mjs",
+    "smoke:n8n": "pwsh -NoProfile -File scripts/smoke-n8n.ps1",
+    "test": "vitest run",
+    "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.13.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.0",
+    "n8n-workflow": "^2.16.0",
+    "prettier": "^3.8.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": ">=2.16.0 <3"
+  }
+}

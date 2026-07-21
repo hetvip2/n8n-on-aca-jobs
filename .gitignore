@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.n8n/
+.azure/
+.env
+.env.*
+!.env.example
+.validation/
+*.tgz
+coverage/
+*.log
+.DS_Store
+.idea/
+.vscode/

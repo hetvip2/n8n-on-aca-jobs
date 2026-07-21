@@ -1,0 +1,73 @@
+{
+  "name": "ACA Jobs - Five Way Fan Out",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Run workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [180, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return Array.from({ length: 5 }, (_, shard) => ({ json: { shard } }));"
+      },
+      "id": "five-shards",
+      "name": "Create five shards",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "operation": "startAndWait",
+        "subscriptionId": "={{$env.AZURE_SUBSCRIPTION_ID}}",
+        "resourceGroup": "={{$env.ACA_JOB_RESOURCE_GROUP}}",
+        "jobName": "={{$env.ACA_JOB_NAME}}",
+        "correlationId": "={{$execution.id + '-shard-' + $json.shard}}",
+        "containerName": "worker",
+        "overrides": {
+          "env": "={{JSON.stringify([{name: 'N8N_SHARD', value: String($json.shard)}])}}"
+        },
+        "pollIntervalSeconds": 5,
+        "timeoutSeconds": 1800
+      },
+      "id": "run-shards",
+      "name": "Run five ACA Jobs",
+      "type": "n8n-nodes-aca-jobs.azureContainerAppsJobs",
+      "typeVersion": 1,
+      "position": [640, 300],
+      "credentials": {
+        "azureContainerAppsJobsApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Azure Container Apps Jobs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const runs = $input.all(); if (runs.length !== 5 || runs.some(({json}) => json.status !== 'Succeeded')) throw new Error('Fan-in requires five successful ACA executions'); return [{json: {status: 'Succeeded', executionCount: runs.length, executionNames: runs.map(({json}) => json.executionName)}}];"
+      },
+      "id": "fan-in",
+      "name": "Verify fan in",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Run workflow": {
+      "main": [[{ "node": "Create five shards", "type": "main", "index": 0 }]]
+    },
+    "Create five shards": {
+      "main": [[{ "node": "Run five ACA Jobs", "type": "main", "index": 0 }]]
+    },
+    "Run five ACA Jobs": {
+      "main": [[{ "node": "Verify fan in", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "8f04eb7f-68b3-4d28-a0bc-bc1a63e318c3"
+}

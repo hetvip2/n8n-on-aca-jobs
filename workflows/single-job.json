@@ -1,0 +1,45 @@
+{
+  "name": "ACA Jobs - Single Job",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Run workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "operation": "startAndWait",
+        "subscriptionId": "={{$env.AZURE_SUBSCRIPTION_ID}}",
+        "resourceGroup": "={{$env.ACA_JOB_RESOURCE_GROUP}}",
+        "jobName": "={{$env.ACA_JOB_NAME}}",
+        "correlationId": "={{$execution.id}}",
+        "containerName": "worker",
+        "overrides": {},
+        "pollIntervalSeconds": 5,
+        "timeoutSeconds": 1800
+      },
+      "id": "aca-job",
+      "name": "Run ACA Job",
+      "type": "n8n-nodes-aca-jobs.azureContainerAppsJobs",
+      "typeVersion": 1,
+      "position": [520, 300],
+      "credentials": {
+        "azureContainerAppsJobsApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Azure Container Apps Jobs"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run workflow": {
+      "main": [[{ "node": "Run ACA Job", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "dd97cd1e-2700-44f0-99ef-c08647ae8f11"
+}
