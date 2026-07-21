@@ -121,11 +121,11 @@ Cancellation propagation is not implemented because ACA Job execution cancellati
 
 ## Testing and CI
 
-`npm run check` runs Prettier check, ESLint, TypeScript, Vitest, build, and package-content validation. CI runs Node `22.22` and `24`, Bicep compilation, azd parsing, and the real local n8n runtime smoke without Azure credentials. `npm audit` and a dedicated secret scanner remain publication gates.
+`npm run check` runs Prettier check, ESLint, TypeScript, Vitest, build, and package-content validation. CI runs Node `22.22` and `24`, Bicep compilation, azd parsing, and the real local n8n runtime smoke without Azure credentials. Dedicated secret scanning and dependency auditing are publication gates.
 
 ## Validation status
 
-As of 2026-07-15, offline unit tests and local package checks are intended to run without Azure. Live Azure deployment, real ACA success/failure/fan-out, independent ARM verification, clean-clone simulation, and three-model review have not been performed in this repository. Therefore this template must not be represented as live-validated or publication-ready.
+Live validation in `westus2` completed an official n8n runtime workflow with exactly five independently matched `Succeeded` ACA executions. CI, clean-clone validation, dedicated secret scanning, dependency audit, independent review, idempotent provisioning, and cleanup are complete. Status: **LIVE VALIDATED**.
 
 ## Costs and production caveats
 
