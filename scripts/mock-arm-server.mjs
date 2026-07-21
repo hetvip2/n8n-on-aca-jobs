@@ -10,10 +10,31 @@ const server = createServer(async (request, response) => {
   const statusMatch = request.url?.match(
     /\/jobs\/([^/]+)\/executions\/([^?]+)\?/,
   );
+  const jobMatch = request.url?.match(/\/jobs\/([^/?]+)\?/);
 
   response.setHeader("Content-Type", "application/json");
   if (request.headers.authorization !== "Bearer local-smoke-token") {
     response.writeHead(401).end("{}");
+    return;
+  }
+  if (request.method === "GET" && jobMatch) {
+    response.writeHead(200).end(
+      JSON.stringify({
+        properties: {
+          template: {
+            containers: [
+              {
+                name: "worker",
+                image:
+                  "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest",
+                resources: { cpu: 0.25, memory: "0.5Gi" },
+                env: [{ name: "DEFAULT_SETTING", value: "preserved" }],
+              },
+            ],
+          },
+        },
+      }),
+    );
     return;
   }
   if (request.method === "POST" && startMatch) {
