@@ -10,7 +10,7 @@ const server = createServer(async (request, response) => {
   const statusMatch = request.url?.match(
     /\/jobs\/([^/]+)\/executions\/([^?]+)\?/,
   );
-  const jobMatch = request.url?.match(/\/jobs\/([^/?]+)\?/);
+  const jobMatch = request.url?.match(/\/jobs\/([^/?]+)\/?\?/);
 
   response.setHeader("Content-Type", "application/json");
   if (request.headers.authorization !== "Bearer local-smoke-token") {
