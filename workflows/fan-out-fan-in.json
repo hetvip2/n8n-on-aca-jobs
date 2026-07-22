@@ -1,5 +1,5 @@
 {
-  "name": "ACA Jobs - Five Way Fan Out",
+  "name": "ACA Jobs - Parameterized Fan Out",
   "nodes": [
     {
       "parameters": {},
@@ -11,10 +11,10 @@
     },
     {
       "parameters": {
-        "jsCode": "return Array.from({ length: 5 }, (_, shard) => ({ json: { shard } }));"
+        "jsCode": "const rawShardCount = $env.ACA_JOB_SHARD_COUNT ?? '5'; const shardCount = Number(rawShardCount); if (!Number.isInteger(shardCount) || shardCount < 1 || shardCount > 50) throw new Error('ACA_JOB_SHARD_COUNT must be an integer from 1 to 50'); return Array.from({ length: shardCount }, (_, shard) => ({ json: { shard } }));"
       },
-      "id": "five-shards",
-      "name": "Create five shards",
+      "id": "parameterized-shards",
+      "name": "Create shards",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [400, 300]
@@ -34,7 +34,7 @@
         "timeoutSeconds": 1800
       },
       "id": "run-shards",
-      "name": "Run five ACA Jobs",
+      "name": "Run ACA Jobs",
       "type": "n8n-nodes-aca-jobs.azureContainerAppsJobs",
       "typeVersion": 1,
       "position": [640, 300],
@@ -47,7 +47,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const runs = $input.all(); if (runs.length !== 5 || runs.some(({json}) => json.status !== 'Succeeded')) throw new Error('Fan-in requires five successful ACA executions'); return [{json: {status: 'Succeeded', executionCount: runs.length, executionNames: runs.map(({json}) => json.executionName)}}];"
+        "jsCode": "const rawShardCount = $env.ACA_JOB_SHARD_COUNT ?? '5'; const shardCount = Number(rawShardCount); if (!Number.isInteger(shardCount) || shardCount < 1 || shardCount > 50) throw new Error('ACA_JOB_SHARD_COUNT must be an integer from 1 to 50'); const runs = $input.all(); if (runs.length !== shardCount || runs.some(({json}) => json.status !== 'Succeeded')) throw new Error(`Fan-in requires ${shardCount} successful ACA executions`); return [{json: {status: 'Succeeded', executionCount: runs.length, executionNames: runs.map(({json}) => json.executionName)}}];"
       },
       "id": "fan-in",
       "name": "Verify fan in",
@@ -58,12 +58,12 @@
   ],
   "connections": {
     "Run workflow": {
-      "main": [[{ "node": "Create five shards", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Create shards", "type": "main", "index": 0 }]]
     },
-    "Create five shards": {
-      "main": [[{ "node": "Run five ACA Jobs", "type": "main", "index": 0 }]]
+    "Create shards": {
+      "main": [[{ "node": "Run ACA Jobs", "type": "main", "index": 0 }]]
     },
-    "Run five ACA Jobs": {
+    "Run ACA Jobs": {
       "main": [[{ "node": "Verify fan in", "type": "main", "index": 0 }]]
     }
   },

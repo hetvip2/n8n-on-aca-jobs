@@ -79,7 +79,13 @@ The **Start** operation returns an execution name immediately. Persist that name
 
 ## Fan-out, retries, and durability
 
-`workflows/fan-out-fan-in.json` creates five input items, starts one ACA execution per shard, and fails the final fan-in unless all five succeed. Tune n8n worker concurrency, ACA job parallelism/quota, and polling intervals together.
+`workflows/fan-out-fan-in.json` creates 1-50 input items, starts one ACA execution per shard, and fails the final fan-in unless every configured shard succeeds. `ACA_JOB_SHARD_COUNT` controls the count and defaults to 5. Tune n8n worker concurrency, ACA job parallelism/quota, and polling intervals together.
+
+## Production Concurrency
+
+Set `ACA_JOB_SHARD_COUNT=25` on every n8n main and worker process that can execute the imported workflow, restart those processes, then invoke the workflow normally. Omit the variable for the five-shard default. Run `npm test -- fan-out-workflow` for executable evidence of default 5, configured 25, and the 1-50 bounds.
+
+Live proof covers five-way fan-out only. The 25- and 50-shard configurations are supported by the workflow and tests but are unmeasured; validate them against the target n8n worker, ARM, and ACA quotas before production use. The client already sends `x-ms-client-request-id` on ARM requests, and its existing unit tests verify that behavior.
 
 ARM `429`, `500`, `502`, `503`, `504`, and network failures use bounded exponential retry. `Retry-After` seconds or HTTP dates are honored up to 60 seconds. One `401` causes credential refresh; a second fails. Permanent `400`, `403`, and `404` responses are not retried. ACA `Failed`, `Canceled`, unknown states, malformed responses, and timeout become n8n node failures.
 
